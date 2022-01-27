@@ -22,7 +22,7 @@ namespace API.Models
         public int StudentGroupId { get; set; }
         
         [JsonPropertyName("lessonDate")]
-        public string LessonDate { get; set; }
+        public DateTime LessonDate { get; set; }
         
         [JsonPropertyName("lessonVisits")]
         public ClassBook[] ClassJournal { get; set; }
@@ -65,7 +65,7 @@ namespace API.Models
             lesson.StudentGroupId = groupId;
             return this;
         }
-        public LessonBuilder AddLessonDate(string lessonDate)
+        public LessonBuilder AddLessonDate(DateTime lessonDate)
         {
             lesson.LessonDate = lessonDate;
             return this;
@@ -77,6 +77,7 @@ namespace API.Models
         }
         public Lesson Build()
         {
+            //TODO check
             return lesson;
         }
 

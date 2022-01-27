@@ -1,33 +1,46 @@
 using API;
 using API.Models;
 using NUnit.Framework;
+using System;
 
 namespace APITests
 {
     public class Tests
     {
-        Lesson lesson;
-
-        [SetUp]
+        AddLessonTestSteps preReq;
+        Lesson newLesson;
+       [SetUp]
         public void Setup()
         {
+            DateTime dateTime = new DateTime(2022, 1, 20, 20, 20, 30, 300);
+            preReq = new AddLessonTestSteps(new User { Email = "james.smith@example.com", Password = "Nj_PJ7K9", Role = "admin" });
 
-           Lesson newLesson = 
-                new LessonBuilder()
-                .AddMentorById(1)
-                .AddStudentsGroupById(1)
-                .AddLessonTheme("asdaaf")
-                .AddLessonDate("12.12.2012")
-                .Build();
+
+
+            //newLesson = 
+            //    new LessonBuilder()
+            //    .AddMentorById(preReq.newMentorInSystem.Id)
+            //    .AddStudentsGroupById(preReq.newGroupInSystem.Id)
+            //    .AddLessonTheme("llll")
+            //    .AddLessonDate(dateTime)
+            //    .Build();
         }
 
         [Test]
-        public void Test1()
+        public void AdminCanAddLesson()
         {
-            WHATClient client = new WHATClient();
-            lesson = client.GetLesson(1).GetAwaiter().GetResult();
+            preReq
+                .VerifyGroupExist();
+                //.VerifyMentorExist()
+                //.AddNewLesson()
+                //.VerifyLessonExist(newLesson.Id);
 
-            Assert.IsTrue(lesson.Id == 1);
+
+        }
+        [TearDown]
+        public void After()
+        {
+         //delete
         }
     }
 }
