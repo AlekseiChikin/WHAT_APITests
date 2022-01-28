@@ -1,12 +1,7 @@
 ﻿using API.Models;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace API
 {
@@ -17,15 +12,17 @@ namespace API
         HttpStatusCode statusCode;
 
 
-        public AccountUser newMentorInSystem;
-        public AccountUser newStudent1InSystem;
-        public AccountUser newStudent2InSystem;
+        public UserInSystem newMentorInSystem;
+        public UserInSystem newStudent1InSystem;
+        public UserInSystem newStudent2InSystem;
 
         public RegisterUserDto newMentor;
         public RegisterUserDto newStudent1;
         public RegisterUserDto newStudent2;
 
         public GroupDto newGroupInSystem;
+
+        public Lesson newLessonInSystem;
 
         public AddLessonTestSteps(User user)
         {
@@ -36,7 +33,7 @@ namespace API
             {
                 FirstName = "Firstn",
                 LastName = "Lastn",
-                Email = "qwerpp8@gmail.com",
+                Email = "qwerpp15@gmail.com",
                 Password = "Qwerty_123",
                 ConfirmPassword = "Qwerty_123"
             };
@@ -44,7 +41,7 @@ namespace API
             {
                 FirstName = "Firsts",
                 LastName = "Lasts",
-                Email = "qwerpps8@gmail.com",
+                Email = "qwerpps15@gmail.com",
                 Password = "Qwerty_123",
                 ConfirmPassword = "Qwerty_123"
             };
@@ -52,44 +49,44 @@ namespace API
             {
                 FirstName = "Firstns",
                 LastName = "Lastns",
-                Email = "qwerppss8@gmail.com",
+                Email = "qwerppss15@gmail.com",
                 Password = "Qwerty_123",
                 ConfirmPassword = "Qwerty_123"
             };
-            //newMentorInSystem = CreateMentorInSystem(newMentor);
-            //newStudent1InSystem = CreateStudentInSystem(newStudent1);
-            //ewStudent2InSystem = CreateStudentInSystem(newStudent2);
+            newMentorInSystem = CreateMentorInSystem(newMentor);
+            newStudent1InSystem = CreateStudentInSystem(newStudent1);
+            newStudent2InSystem = CreateStudentInSystem(newStudent2);
 
-            newGroupInSystem = CreateNewGroupInSystem("zaadssdf");
+            newGroupInSystem = CreateNewGroupInSystem("GroupTests2");
 
         }
-        AccountUser CreateMentorInSystem(RegisterUserDto newUser)
+        UserInSystem CreateMentorInSystem(RegisterUserDto newUser)
         {
             uri = new Uri($"/api/v2/accounts/reg", UriKind.Relative);
-            var response = client.POST<RegisterUserDto, AccountUser>(uri, newUser, out statusCode);
+            var response = client.Post<RegisterUserDto, AccountUser>(uri, newUser, out statusCode);
 
             Debug.WriteLine($"On CreateUserInSystem - Register User code = {statusCode}");
 
             uri = new Uri($"/api/v2/mentors/{response.Id}", UriKind.Relative);
-            var resp = client.POST<UserInSystem>(uri, out statusCode);
+            var resp = client.Post<UserInSystem>(uri, out statusCode);
 
             Debug.WriteLine($"On CreateUserInSystem - Asign role code = {statusCode}");
 
-            return response;
+            return resp;
         }
-        AccountUser CreateStudentInSystem(RegisterUserDto newUser)
+        UserInSystem CreateStudentInSystem(RegisterUserDto newUser)
         {
             uri = new Uri($"/api/v2/accounts/reg", UriKind.Relative);
-            var response = client.POST<RegisterUserDto, AccountUser>(uri, newUser, out statusCode);
+            var response = client.Post<RegisterUserDto, AccountUser>(uri, newUser, out statusCode);
 
             Debug.WriteLine($"On CreateStudentInSystem - Register User code = {statusCode}");
 
             uri = new Uri($"/api/v2/students/{response.Id}", UriKind.Relative);
-            var resp = client.POST<UserInSystem>(uri, out statusCode);
+            var resp = client.Post<UserInSystem>(uri, out statusCode);
 
             Debug.WriteLine($"On CreateStudentInSystem - Asign role code = {statusCode}");
 
-            return response;
+            return resp;
         }
 
         GroupDto CreateNewGroupInSystem(string groupName)
@@ -97,35 +94,36 @@ namespace API
             DateTime dateStart = new DateTime(2022, 1 , 1 ,12 , 15 , 30 , 300);
             DateTime dateEnd = new DateTime(2022, 1, 10, 10, 15, 30, 300);
 
-            GroupDto group = new GroupDto
+            GroupPostDto group = new GroupPostDto
             {
-                MentorIds = new int[] { 13 },
+                MentorIds = new int[] { newMentorInSystem.Id },
                 Name = groupName,
                 CourseId = 1,
-                StudentIds = new int[] { 2 },
+                StudentIds = new int[] { newStudent1InSystem.Id, newStudent2InSystem.Id },
                 StartDate = "2020-01-25",
                 FinishDate = "2022-01-26"
             };
 
             uri = new Uri($"/api/v2/student_groups", UriKind.Relative);
-            var response = client.POST<GroupDto, GroupDto>(uri, group, out statusCode);
+            var response = client.Post<GroupPostDto, GroupDto>(uri, group, out statusCode);
 
             Debug.WriteLine($"On CreateNewGroupInSystem - code = {statusCode}");
 
             return response;
 
         }
+       
         public AddLessonTestSteps VerifyGroupExist()
         {
             uri = new Uri($"/api/v2/student_groups/{newGroupInSystem.Id}", UriKind.Relative);
-            var response = client.GET<GroupDto>(uri, out statusCode);
+            var response = client.Get<GroupDto>(uri, out statusCode);
             Assert.AreEqual(HttpStatusCode.OK, statusCode);
             return this;
         }
         public AddLessonTestSteps VerifyMentorExist()
         {
             uri = new Uri($"/api/v2/mentors/{newMentorInSystem.Id}", UriKind.Relative);
-            var response = client.GET<UserInSystem>(uri, out statusCode);
+            var response = client.Get<UserInSystem>(uri, out statusCode);
             Assert.AreEqual(HttpStatusCode.OK, statusCode);
             return this;
         }
@@ -133,15 +131,17 @@ namespace API
         public AddLessonTestSteps AddNewLesson(Lesson newLesson)
         {
             uri = new Uri($"/api/v2/lessons", UriKind.Relative);
-            var response = client.POST<Lesson, Lesson>(uri, newLesson, out statusCode);
+            var response = client.Post<Lesson, Lesson>(uri, newLesson, out statusCode);
+
+            newLessonInSystem = response;
 
             return this;
         }
 
-        public AddLessonTestSteps VerifyLessonExist(int lessonId)
+        public AddLessonTestSteps VerifyLessonExist()
         {
-            uri = new Uri($"/api/v2/lessons/{lessonId}", UriKind.Relative);
-            var response = client.GET<Lesson>(uri, out statusCode);
+            uri = new Uri($"/api/v2/lessons/{newLessonInSystem.Id}", UriKind.Relative);
+            var response = client.Get<Lesson>(uri, out statusCode);
             Assert.AreEqual(HttpStatusCode.OK, statusCode);
             return this;
         }
